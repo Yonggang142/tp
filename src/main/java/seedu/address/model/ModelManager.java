@@ -116,8 +116,11 @@ public class ModelManager implements Model {
 
     @Override
     public void updateSortedPersonList() {
-        sortedPersons.setComparator((person1, person2) ->
-                person1.getName().toString().compareToIgnoreCase(person2.getName().toString()));
+        sortedPersons.setComparator((person1, person2) -> {
+            if (person1.getName() == null) return 1;
+            if (person2.getName() == null) return -1;
+            return person1.getName().toString().compareToIgnoreCase(person2.getName().toString());
+        });
     }
 
     @Override
