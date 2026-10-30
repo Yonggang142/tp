@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,36 @@ import seedu.address.model.person.Person;
 
 /** Tests that interactions are added to the selected person. */
 public class InteractionCommandTest {
+    @Test
+    public void execute_futureDate_rejectsWithoutChangesButAllowsToday() throws Exception {
+        Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+        Person original = model.getFilteredPersonList().get(0);
+        LocalDate today = LocalDate.now();
+        InteractionCommand command = new InteractionCommand(INDEX_FIRST_PERSON,
+                today.plusDays(1).toString(), InteractionType.MEETING, "");
+
+        CommandException exception = assertThrows(CommandException.class, () -> command.execute(model));
+        assertEquals(InteractionCommand.MESSAGE_FUTURE_DATE, exception.getMessage());
+        assertEquals(original, model.getFilteredPersonList().get(0));
+        assertFalse(model.canUndoAddressBook());
+
+        new InteractionCommand(INDEX_FIRST_PERSON, today.toString(), InteractionType.MEETING, "").execute(model);
+        assertEquals(today, model.getFilteredPersonList().get(0).getInteractions().getLast().getDate());
+    }
+
+    @Test
+    public void execute_outOfOrderDates_sortsHistoryOldestFirst() throws Exception {
+        Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+        LocalDate today = LocalDate.now();
+        for (LocalDate date : List.of(today, today.minusDays(20), today.minusDays(10))) {
+            new InteractionCommand(INDEX_FIRST_PERSON, date.toString(), InteractionType.MEETING, "").execute(model);
+        }
+
+        assertEquals(List.of(today.minusDays(20), today.minusDays(10), today),
+                model.getFilteredPersonList().get(0).getInteractions().stream()
+                        .map(Interaction::getDate).toList());
+    }
+
     @Test
     public void execute_afterUndo_replacesRedoBranchAndRecordsInteraction() throws Exception {
         Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());

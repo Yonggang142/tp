@@ -5,7 +5,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_INTERACTION_DATE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_INTERACTION_NOTE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_INTERACTION_TYPE;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,6 +29,7 @@ public class InteractionCommand extends Command {
             + PREFIX_INTERACTION_TYPE + "TYPE [" + PREFIX_INTERACTION_NOTE + "NOTE]\n"
             + "Example: interaction 1 d/2026-10-20 ty/MEETING nt/Discussed proposal";
     public static final String MESSAGE_SUCCESS = "Logged %1$s interaction with %2$s on %3$s.";
+    public static final String MESSAGE_FUTURE_DATE = "Interaction date cannot be in the future.";
 
     private final Index index;
     private final String date;
@@ -55,8 +58,12 @@ public class InteractionCommand extends Command {
             throw new CommandException(Interaction.MESSAGE_INVALID_DATE);
         }
         Interaction interaction = new Interaction(date, type, note);
+        if (interaction.getDate().isAfter(LocalDate.now())) {
+            throw new CommandException(MESSAGE_FUTURE_DATE);
+        }
         List<Interaction> history = new ArrayList<>(original.getInteractions());
         history.add(interaction);
+        history.sort(Comparator.comparing(Interaction::getDate));
         Person updated = new Person(original.getName(), original.getPhone(), original.getEmail(),
                 original.getAddress(), original.getTags(), original.getRemark(), original.getCategory(),
                 original.getRole(), original.getCompany(), original.getBoss(), original.getFollowUpDate(), history);

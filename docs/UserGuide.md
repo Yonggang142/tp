@@ -232,7 +232,7 @@ Format: `interaction INDEX d/DATE ty/TYPE [nt/NOTE]`
 
 * Logs an interaction with the contact at the specified `INDEX`.
 * `d/` and `ty/` are required. Each prefix can appear only once.
-* `DATE` must be a valid calendar date in `yyyy-MM-dd` format.
+* `DATE` must be a valid calendar date in `yyyy-MM-dd` format, and cannot be in the future.
 * `TYPE` must be one of `MEETING`, `CALL`, `EMAIL`, `PRESENTATION` (case-insensitive).
 * `NOTE` is optional and can be empty.
 * Each interaction is added to the contact's history; existing interactions are kept.
